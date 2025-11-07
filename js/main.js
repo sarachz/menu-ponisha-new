@@ -38,12 +38,11 @@ function loadMenu() {
         const div = document.createElement("div");
         div.className = "cat-item";
         div.dataset.index = idx;
-
+        console.log(cat);
         const iconBox = document.createElement("div");
         iconBox.className = "icon-box";
 
         const img = document.createElement("img");
-        const slug = cat.replace(/[^\u0600-\u06FF0-9a-zA-Z]+/g, "_");
         img.src = cat.img || "";
         img.onerror = () => {
           img.src =
@@ -53,7 +52,7 @@ function loadMenu() {
 
         const label = document.createElement("div");
         label.className = "label";
-        label.textContent = cat;
+        label.textContent = cat.name;
 
         div.appendChild(iconBox);
         div.appendChild(label);
@@ -67,7 +66,6 @@ function loadMenu() {
               scrollContainer.scrollHeight > scrollContainer.clientHeight
             ) {
               section.scrollIntoView();
-
               const containerRect = scrollContainer.getBoundingClientRect();
               const sectionRect = section.getBoundingClientRect();
               scrollContainer.scrollTop +=
@@ -90,6 +88,7 @@ function loadMenu() {
     function buildSections() {
       const root = document.getElementById("root");
       root.innerHTML = "";
+
       categories.forEach((cat, i) => {
         const idx = i + 1;
         const sec = document.createElement("section");
@@ -98,10 +97,11 @@ function loadMenu() {
 
         const title = document.createElement("div");
         title.className = "cat-title";
-        title.textContent = cat;
+        title.textContent = cat.name;
         sec.appendChild(title);
 
-        const products = menuData.filter((p) => p.category === cat);
+        const products = menuData.filter((p) => p.category === cat.name);
+
         if (products.length === 0) {
           const empty = document.createElement("div");
           empty.style.textAlign = "center";
@@ -287,11 +287,15 @@ function loadMenu() {
                 `آیتم ${idx + 1}`,
               category: map.category || map.cat || cells[3] || "بدون دسته",
               price: map.price || cells[4] || "",
+              category_image: map.category_image || cells[5] || "",
             };
           })
           .filter((p) => p.name.trim());
 
-        categories = [...new Set(menuData.map((p) => p.category))];
+        // 👇 category objects with image
+        categories = Array.from(
+          new Map(menuData.map((p) => [p.category, p.category_image])).entries()
+        ).map(([name, img]) => ({ name, img }));
 
         buildCategories();
         buildSections();
@@ -305,7 +309,7 @@ function loadMenu() {
           if (sidebar) sidebar.classList.add("visible");
         }, 50);
 
-        setupScrollObserver(); // ✅ نسخه هوشمند
+        setupScrollObserver();
         window.menuLoaded = true;
         resolve();
       })
